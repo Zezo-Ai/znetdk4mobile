@@ -19,8 +19,8 @@
  * --------------------------------------------------------------------
  * Core User session API
  *
- * File version: 1.15
- * Last update: 06/30/2025
+ * File version: 1.16
+ * Last update: 09/20/2025
  */
 Class UserSession {
 
@@ -536,7 +536,7 @@ Class UserSession {
      */
     static public function setCustomValue($variableName, $value, $sanitize = FALSE) {
         if (isset($variableName) && isset($value)) {
-            $sessionVar = 'zdkcust-' . $variableName;
+            $sessionVar = self::$customVarPrefix . $variableName;
             self::setValue($sessionVar, $sanitize ? self::getCleanedValue($value) : $value);
             return TRUE;
         }
@@ -551,7 +551,7 @@ Class UserSession {
      * @return mixed Value read in session for the specified variable
      */
     static public function getCustomValue($variableName, $sanitize = FALSE) {
-        $sessionVar = 'zdkcust-' . $variableName;
+        $sessionVar = self::$customVarPrefix . $variableName;
         if (!is_null(self::getValue($sessionVar))) {
             return $sanitize ? self::getCleanedValue(self::getValue($sessionVar)) : self::getValue($sessionVar);
         } else {
@@ -566,7 +566,7 @@ Class UserSession {
      * otherwise
      */
     static public function removeCustomValue($variableName) {
-        $sessionVar = 'zdkcust-' . $variableName;
+        $sessionVar = self::$customVarPrefix . $variableName;
         if (!is_null(self::getValue($sessionVar))) {
             unset($_SESSION[\General::getAbsoluteURI() . ZNETDK_APP_NAME][$sessionVar]);
             return TRUE;
@@ -614,7 +614,7 @@ Class UserSession {
      * session and if POST request token matches the one stored in Session.
      */
     static public function isUITokenValid($silent = TRUE) {
-        if (Request::getMethod() === 'GET') {
+        if (Request::getMethod() !== 'POST') {
             return TRUE;
         }
         $sessionToken = self::getUIToken();

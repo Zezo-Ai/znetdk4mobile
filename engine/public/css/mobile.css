@@ -17,8 +17,8 @@
  * --------------------------------------------------------------------
  * Mobile layout view styles
  *
- * File version: 1.8
- * Last update: 05/27/2025
+ * File version: 1.9
+ * Last update: 09/03/2025
  */
 
 /* GENERAL */
@@ -32,6 +32,15 @@ a[target="_blank"]:after {
 }
 
 /* HEADER */
+#zdk-skip-to-content {
+    position: absolute;
+    left: 50%;
+    z-index: 4;
+    transform: translateY(-100%);
+}
+#zdk-skip-to-content:focus {
+    transform: translateY(0%);
+}
 #zdk-header {
     z-index: 3;
     transition: top 0.3s;
@@ -69,7 +78,7 @@ body > h1 {
 }
 
 #zdk-company-logo img {
-    max-height: 116px;
+    max-height: 84px;
 }
 
 #zdk-side-nav-menu a:focus {
@@ -97,6 +106,12 @@ body > h1 {
 #zdk-custom-menu li a {
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+#zdk-custom-menu li a:focus-visible,
+#zdk-tab-menu .items a:focus-visible,
+#zdk-side-nav-button:focus-visible {
+    outline-offset: -4px;
 }
 
 #zdk-custom-menu > ul > li:not(.is-active) > a {
@@ -203,7 +218,6 @@ footer {
 }
 
 /* AJAX LOADING */
-
 .zdk-ajax-loader {
     z-index: 20;
     position: fixed;
@@ -373,3 +387,9 @@ input[type=search] ~ ul > li {
 .w3-pink {background-color: #df2a66 !important}
 .w3-teal {background-color: #0f8579 !important}
 .w3-deep-orange {color: #000 !important}
+
+/* Better focused element visibility */
+:focus-visible {
+    outline-width: 3px !important;
+    outline-style: solid !important;
+}

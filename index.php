@@ -21,8 +21,8 @@
  * Page encoded in UTF8 without BOM to avoid the JQuery json.parse unexpected
  * character exception.
  *
- * File version: 1.7
- * Last update: 12/15/2023
+ * File version: 1.8
+ * Last update: 09/22/2025
  */
 
 /** OS root absolute path of the directory where ZnetDK is installed */
@@ -53,12 +53,19 @@ define('ZNETDK_APP_ROOT',getcwd(). DIRECTORY_SEPARATOR . \General::getApplicatio
 if ($isIncludePathModifiable) {
     set_include_path(get_include_path().PATH_SEPARATOR.ZNETDK_APP_ROOT);
 }
-
+/** ZnetDK absolute URI, for example "/znetdk/" */
+define('ZNETDK_ROOT_URI', \General::getAbsoluteURI());
+/** Current application absolute URI for accessing web ressources */
+define('ZNETDK_APP_URI', ZNETDK_ROOT_URI
+        . \General::getApplicationPublicDirRelativeURI(ZNETDK_APP_NAME));
 // Global configuration
 include ZNETDK_CORE_ROOT . DIRECTORY_SEPARATOR . 'version.php'; // Current version of ZnetDK
 @include(ZNETDK_APP_ROOT . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'config.php'); // Application configuration file is optional
 \General::initModuleParameters();
 @include(ZNETDK_CORE_ROOT . DIRECTORY_SEPARATOR . 'config.php'); // Core configuration file is mandatory
+
+// Redirection to HTTPS if required
+\Response::redirectToHttps();
 
 // Start user session if the script is not called from command line
 if (!isset($argc)) {
@@ -67,13 +74,6 @@ if (!isset($argc)) {
 
 // Error tracking enabled
 \ErrorHandler::init();
-
-/** ZnetDK absolute URI, for example "/znetdk/" */
-define('ZNETDK_ROOT_URI', \General::getAbsoluteURI());
-
-/** Current application absolute URI for accessing web ressources */
-define('ZNETDK_APP_URI', ZNETDK_ROOT_URI
-        . \General::getApplicationPublicDirRelativeURI(ZNETDK_APP_NAME));
 
 /** Localized strings */
 \api\Locale::setApplicationLanguage();
@@ -92,10 +92,10 @@ define('ZNETDK_TIME_BEFORE_DO_ACTION', microtime(true));
 \MainController::doAction();
 
 /** The PHP script configured to be executed once the controller action is done */
-if (CFG_EXEC_PHP_SCRIPT_AFTER_ACTION_DONE !== NULL 
+if (CFG_EXEC_PHP_SCRIPT_AFTER_ACTION_DONE !== NULL
         && file_exists(CFG_EXEC_PHP_SCRIPT_AFTER_ACTION_DONE)) {
     define('ZNETDK_TIME_AFTER_DO_ACTION', microtime(true));
-    define('ZNETDK_TIME_ELAPSED_FOR_ACTION', 
+    define('ZNETDK_TIME_ELAPSED_FOR_ACTION',
         round(ZNETDK_TIME_AFTER_DO_ACTION - ZNETDK_TIME_BEFORE_DO_ACTION, 3));
     require CFG_EXEC_PHP_SCRIPT_AFTER_ACTION_DONE;
 }

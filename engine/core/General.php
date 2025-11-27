@@ -19,8 +19,8 @@
  * --------------------------------------------------------------------
  * Core General purpose API
  *
- * File version: 1.19
- * Last update: 04/11/2025
+ * File version: 1.20
+ * Last update: 09/22/2025
  */
 
 /**
@@ -341,8 +341,7 @@ Class General {
      * 'https://www.mydomain/index.php?appl=myapp'
      */
     static public function getApplicationURI() {
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on'
-                ? 'https' : 'http';
+        $protocol = Request::isHttps() ? 'https' : 'http';
         $server = filter_input(INPUT_SERVER, 'SERVER_NAME', FILTER_SANITIZE_URL);
         if (empty($server) && isset($_SERVER['SERVER_NAME'])) {
             // See https://bugs.php.net/bug.php?id=49184 bug on some
@@ -553,7 +552,7 @@ Class General {
      */
     static public function isPictureTooBig($filePath, $tweakFactor = 2) {
         $imageInfo = getimagesize($filePath);
-        if (is_array($imageInfo) && key_exists(0, $imageInfo) 
+        if (is_array($imageInfo) && key_exists(0, $imageInfo)
                 && key_exists(1, $imageInfo) && key_exists('bits', $imageInfo)) {
             $channels = key_exists('channel', $imageInfo) ? $imageInfo['channels'] : 1;
             $K64 = 65536;    // number of bytes in 64K

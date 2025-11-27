@@ -19,8 +19,8 @@
  * --------------------------------------------------------------------
  * Core API for the definition of the HTTP response data
  *
- * File version: 1.16
- * Last update: 12/06/2024
+ * File version: 1.17
+ * Last update: 09/22/2025
  */
 
 /**
@@ -204,7 +204,7 @@ class Response {
      * @param string $fileName Name given to the CSV file requested for download
      * @param array $header array which contains the column header labels of the
      * CSV file.
-     * @param boolean $forDisplayInline Specifies whether the file should be 
+     * @param boolean $forDisplayInline Specifies whether the file should be
      * viewed or saved to disk after downloading. If the value is TRUE, the
      * downloaded file is intended to be displayed directly in the internet
      * browser (Content-Disposition: inline header).
@@ -227,7 +227,7 @@ class Response {
     public function setCustomContent($content) {
         $this->customContent = $content;
     }
-    
+
     /**
      * Set the specified HTTP header status code in case of error
      * @param int $errorStatusCode The error status code (401, 403, 404 or 500)
@@ -237,20 +237,33 @@ class Response {
                 || $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.1'
                 ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
         switch ($errorStatusCode) {
-            case 404: 
+            case 404:
                 $header = "{$serverProtocol} 404 Not Found";
                 break;
-            case 403: 
+            case 403:
                 $header = "{$serverProtocol} 403 Forbidden";
                 break;
-            case 401: 
+            case 401:
                 $header = "{$serverProtocol} 401 Unauthorized";
                 break;
-            default: 
+            default:
                 $header = "{$serverProtocol} 500 Internal Server Error";
                 $errorStatusCode = 500;
         }
         header($header, TRUE, $errorStatusCode);
+    }
+
+    /**
+     * Forces the application to redirect to HTTPS if CFG_HTTPS_ONLY_ALLOWED
+     * is TRUE and the current request's protocol is HTTP.
+     */
+    static public function redirectToHttps() {
+        if (CFG_HTTPS_ONLY_ALLOWED === TRUE && !\Request::isHttps()) {
+            $redirectURL = str_replace('http://', 'https://', \General::getApplicationURI());
+            header('HTTP/1.1 301 Moved Permanently');
+            header("Location: {$redirectURL}");
+            exit();
+        }
     }
 
     /**

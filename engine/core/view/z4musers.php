@@ -18,8 +18,8 @@
  * --------------------------------------------------------------------
  * ZnetDK Core users view for mobile
  *
- * File version: 1.12
- * Last update: 12/16/2024
+ * File version: 1.13
+ * Last update: 09/04/2025
  */
 $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
 ?>
@@ -48,16 +48,18 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
 </div>
 <!-- List of Users -->
 <ul id="mzdk-user-list" class="w3-ul w3-hide w3-margin-bottom"
-        data-zdk-load="users:all" data-zdk-autocomplete="users:suggestions">
+        data-zdk-load="Users:all" data-zdk-autocomplete="Users:suggestions">
     <li class="<?php echo $color['list_border_bottom']; ?> <?php echo $color['list_row_hover']; ?>" data-id="{{user_id}}">
         <div class="w3-row w3-stretch">
-            <a class="edit" href="javascript:void(0)">
-                <div class="w3-col s12 m6 l3 w3-padding-small">
-                    <div class="w3-large"><strong>{{user_name}}</strong></div>
+            <div class="w3-col s12 m6 l3 w3-padding-small">
+                <a class="edit w3-large" href="javascript:void(0)">
+                    <strong>{{user_name}}</strong>
+                </a>
+                <div>
                     <span class="w3-tag <?php echo $color['tag']; ?>">{{login_name}}</span>
                     <span class="is-hidden{{notes_exist}}"><i>{{notes}}</i></span>
                 </div>
-            </a>
+            </div>
             <div class="w3-col s12 m6 l3 w3-padding-small">
                 <i class="<?php echo $color['icon']; ?> fa fa-envelope fa-lg"></i>
                 <a href="mailto:{{user_email}}">{{user_email}}</a>
@@ -94,7 +96,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                 <span class="title"></span>
             </h4>
         </header>
-        <form class="w3-container <?php echo $color['modal_content']; ?>" data-zdk-load="users:detail" data-zdk-submit="users:save">
+        <form class="w3-container <?php echo $color['modal_content']; ?>" data-zdk-load="Users:detail" data-zdk-submit="Users:save">
             <input type="hidden" name="user_id">
             <div class="w3-section">
                 <!-- Identity -->
@@ -225,12 +227,12 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                 userEnabledColor = 'w3-black';
                 userEnabledLabel = '<?php echo LC_FORM_LBL_USER_STATUS_ARCHIVED; ?>';
             }
-            rowData.user_enabled_label = '<div class="w3-tag w3-round-xlarge ' 
+            rowData.user_enabled_label = '<div class="w3-tag w3-round-xlarge '
                     + userEnabledColor + '">' + userEnabledLabel + '</div>';
             const hasExpiredClass = rowData.has_expired === '1' ? ' class="w3-tag w3-red"' : '';
-            const expirationDate = rowData.has_expired === '1' ? '<i class="fa fa-exclamation"></i> <b>' 
+            const expirationDate = rowData.has_expired === '1' ? '<i class="fa fa-exclamation"></i> <b>'
                     + rowData.expiration_date_locale + '</b>' : rowData.expiration_date_locale;
-            rowData.expiration_date_display = '<span' + hasExpiredClass + '>' 
+            rowData.expiration_date_display = '<span' + hasExpiredClass + '>'
                     + expirationDate + '</span>';
         };
         z4muserList.searchKeywordCaption = '<i class="w3-small"> <i class="fa fa-info"></i> '
@@ -279,7 +281,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                 //  ... and the user's profiles are selected
                 innerForm.setInputValue('profiles[]', formData['profiles[]'], true);
                 // Modal can be displayed now as the profiles are loaded
-                openModal(modalObj);
+                openModal(modalObj, formData.user_id);
             });
             // The modal dialog is not displayed now
             return false;
@@ -289,7 +291,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                 znetdkMobile.content.getParentViewId($('#mzdk-user-list')));
         function loadProfiles(formElement, callback) {
             znetdkMobile.ajax.request({
-                controller: 'users',
+                controller: 'Users',
                 action: 'profiles',
                 callback: function(response) {
                     var profileElement = formElement.element.find('select[name="profiles[]"]');
@@ -305,11 +307,13 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
             });
         }
         // Open modal dialog: on form submit success, the list is refreshed
-        function openModal(modalObj) {
+        function openModal(modalObj, userId) {
             modalObj.open(function(response){
                 if (response.success === true) {
                     z4muserList.refresh();
                 }
+            }, function(){ // On close, the focus is set to the row matching userId
+                z4muserList.setFocus(userId > 0 ? userId : undefined);
             });
         }
         // Filter by status
@@ -325,7 +329,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                     return;
                 }
                 znetdkMobile.ajax.request({
-                    controller: 'users',
+                    controller: 'Users',
                     action: 'remove',
                     data: {user_id: $('#mzdk-user-modal input[name=user_id]').val()},
                     callback: function(response) {

@@ -19,8 +19,8 @@
  * --------------------------------------------------------------------
  * Core API for retrieving HTTP request data
  *
- * File version: 1.13
- * Last update: 09/01/2023
+ * File version: 1.14
+ * Last update: 09/22/2025
  */
 
 /**
@@ -70,7 +70,7 @@ class Request {
      * Set the characters to trim from request variables
      * @param string $trimedCharacters The characters to trim. If NULL, the
      * default characters are set (see defaultTrimedCharacters property)
-     * @return boolean Returns TRUE on success, otherwise FALSE if 
+     * @return boolean Returns TRUE on success, otherwise FALSE if
      * $trimedCharacters is not NULL or is not a string.
      */
     public function setTrimedCharacters($trimedCharacters = NULL) {
@@ -127,7 +127,7 @@ class Request {
         }
         if ($this->filteringLevel === 'HIGH') {
             // Remove content between '<' and '>' characters, NUL characters but preserves quotes
-            return \General::sanitize(trim($value, $this->trimedCharacters));            
+            return \General::sanitize(trim($value, $this->trimedCharacters));
         }
         $search = '<=';
         $replace = '&lowerorequalto;';
@@ -141,8 +141,17 @@ class Request {
      */
     public static function getMethod() {
         return key_exists('REQUEST_METHOD', $_SERVER)
-                && ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'GET') 
+                && ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'GET')
                 ? $_SERVER['REQUEST_METHOD'] : NULL;
+    }
+
+    /**
+     * Checks if the request's protocol is HTTP or HTTPS
+     * @return Boolean TRUE if is HTTPS, FALSE otherwise.
+     */
+    public static function isHttps() {
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || $_SERVER['SERVER_PORT'] == 443;
     }
 
     /**
@@ -153,7 +162,7 @@ class Request {
         $controller = key_exists('control', $_REQUEST) ? $_REQUEST['control'] : NULL;
         return \General::sanitize($controller, 'controller');
     }
-    
+
     /**
      * Indicates whether the current controller name specified as GET parameter
      * is a reserved name.
@@ -161,7 +170,7 @@ class Request {
      */
     public static function isControllerReservedNameForGetMethod() {
         $reservedName = ['httperror', 'offline', 'resetpwd'];
-        if (self::getMethod() === 'GET' 
+        if (self::getMethod() === 'GET'
                 && in_array(self::getController(), $reservedName)) {
             return TRUE;
         }
@@ -227,7 +236,7 @@ class Request {
      * Returns the HTTP error code.
      * @return string value "403", "404" or "500"
      */
-    public static function getHttpErrorCode() {        
+    public static function getHttpErrorCode() {
         return http_response_code();
     }
 
@@ -263,7 +272,7 @@ class Request {
      * @return string Language code or NULL if the language is not set.
      */
     public static function getAcceptLanguage() {
-        $language = key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) 
+        $language = key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)
                 ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : NULL;
         return \General::sanitize($language, 'acceptLang');
     }
@@ -305,7 +314,7 @@ class Request {
     public static function getHttpBasicAuthCredentials() {
         $user = isset($_SERVER['PHP_AUTH_USER']) ? filter_var($_SERVER['PHP_AUTH_USER'], FILTER_DEFAULT) : NULL;
         $password = isset($_SERVER['PHP_AUTH_PW']) ? filter_var($_SERVER['PHP_AUTH_PW'], FILTER_DEFAULT) : NULL;
-        if (is_null($user) && is_null($password) && isset($_SERVER['HTTP_AUTHORIZATION']) 
+        if (is_null($user) && is_null($password) && isset($_SERVER['HTTP_AUTHORIZATION'])
                 && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
             list($user, $password) = explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
         } elseif (is_null($user) && is_null($password) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])
@@ -316,7 +325,7 @@ class Request {
         }
         return array('login_name' => $user, 'password' => $password);
     }
-    
+
     /**
      * Returns the UI token sent to HTTP request as GET or POST parameter
      * @return string The sanitized token

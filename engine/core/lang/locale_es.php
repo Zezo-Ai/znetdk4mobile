@@ -18,8 +18,8 @@
 * --------------------------------------------------------------------
 * Core spanish translations of the application
 *
-* File version: 1.22
-* Last update: 12/15/2024
+* File version: 1.23
+* Last update: 08/29/2025
 */
 
 /* General PHP localization settings (used by the PHP 'setlocale' function) */
@@ -42,6 +42,7 @@ define('LC_LANG_ISO_CODE','es');
 define('LC_PAGE_TITLE','Aplicación ZnetDK');
 
 /* Header labels */
+define('LC_HEAD_LNK_SKIP_TO_CONTENT', 'Saltar al contenido');
 define('LC_HEAD_TITLE','Aplicación ZnetDK (core)');
 define('LC_HEAD_SUBTITLE','Lista para desarrollar...');
 define('LC_HEAD_LNK_LOGOUT','desconectarse');

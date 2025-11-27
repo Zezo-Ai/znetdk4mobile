@@ -18,8 +18,8 @@
 * --------------------------------------------------------------------
 * Core parameters of the applications
 *
-* File version: 1.18
-* Last update: 04/17/2025
+* File version: 1.19
+* Last update: 08/29/2025
 */
 
 /** Page layout chosen for the application.
@@ -442,7 +442,7 @@ define('CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME', [
     'footer_border_top' => 'w3-border-theme',
     'content' => 'w3-theme-light',
     'vertical_nav_menu' => 'w3-theme-l4','horizontal_nav_menu' => 'w3-theme-l4',
-    'nav_menu_hover' => 'w3-hover-theme',
+    'nav_menu_hover' => 'w3-hover-theme','nav_skip_to_content' => 'w3-theme-l4',
     'nav_menu_select' => 'w3-theme-l3', 'nav_menu_close' => 'w3-text-theme',
     'nav_menu_bar_select' => 'w3-border-theme',
     'install' => 'w3-light-gray', 'install_border' => 'w3-border-dark-gray',
@@ -572,6 +572,13 @@ define('CFG_SEARCH_ENGINES_INDEXING_ENABLED', TRUE);
  * FALSE (the default value).
  */
 define('CFG_HTTP_BASIC_AUTHENTICATION_ENABLED', FALSE);
+
+/**
+ * Forces HTTPS as only allowed protocol
+ * @return boolean TRUE if only the HTTPS protocol is allowed, FALSE otherwise
+ * (default value).
+ */
+define('CFG_HTTPS_ONLY_ALLOWED', FALSE);
 
 /**
  * Defines the controller actions that the users can execute when it is

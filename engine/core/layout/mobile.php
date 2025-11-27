@@ -6,8 +6,8 @@
  License GNU GPL http://www.gnu.org/licenses/gpl-3.0.html GNU GPL
  =============================================================================
  ZnetDK 'mobile' page layout
- File version: 1.13
- Last update: 06/23/2025
+ File version: 1.14
+ Last update: 09/03/2025
 -->
 <?php /**
  * Input variables >>
@@ -50,15 +50,16 @@ require ZNETDK_ROOT . CFG_MOBILE_FAVICON_CODE_FILENAME; ?>
           data-service-worker-url="<?php echo CFG_MOBILE_SERVICE_WORKER_URL; ?>">
         <!-- Header title only for SEO purpose -->
         <!--<h1><?php echo LC_HEAD_TITLE; ?></h1>-->
+        <a id="zdk-skip-to-content" class="w3-tag <?php echo $color['nav_skip_to_content']; ?>" href='#'><?php echo LC_HEAD_LNK_SKIP_TO_CONTENT; ?></a>
         <!-- Main vertical menu -->
-        <nav id="zdk-side-nav-menu" data-select="<?php echo $color['nav_menu_select']; ?>" data-hover="<?php echo $color['nav_menu_hover']; ?>" data-border-select="<?php echo $color['nav_menu_bar_select']; ?>" class="w3-sidebar w3-bar-block w3-collapse <?php echo $color['vertical_nav_menu']; ?> w3-card-2<?php echo CFG_VIEW_PAGE_RELOAD ? '' : ' w3-animate-left'; ?>">
+        <nav id="zdk-side-nav-menu" data-select="<?php echo $color['nav_menu_select']; ?>" data-hover="<?php echo $color['nav_menu_hover']; ?>" data-border-select="<?php echo $color['nav_menu_bar_select']; ?>" class="w3-sidebar w3-bar-block w3-collapse <?php echo $color['vertical_nav_menu']; ?> <?php echo CFG_VIEW_PAGE_RELOAD ? '' : ' w3-animate-left'; ?>">
             <!-- Close button -->
             <button class="close w3-right w3-button w3-hide-large <?php echo $color['nav_menu_close']; ?> <?php echo $color['btn_hover']; ?>" aria-label="<?php echo LC_BTN_CLOSE; ?>"><i class="fa fa-times w3-xlarge" aria-hidden="true" title="<?php echo LC_BTN_CLOSE; ?>"></i></button>
             <div class="w3-clear"></div>
             <!-- Company logo -->
-            <div class="w3-margin-bottom w3-center">
-                <a id="zdk-company-logo" href="<?php self::renderLogoURL(); ?>" title="<?php echo LC_HEAD_IMG_LOGO_LINK_TITLE; ?>">
-                    <img class="logo w3-hover-opacity w3-padding-16" src="<?php echo LC_HEAD_IMG_LOGO; ?>" alt="<?php echo strip_tags(LC_HEAD_TITLE); ?>">
+            <div class="w3-padding-16 w3-margin-bottom w3-center">
+                <a id="zdk-company-logo" class="w3-show-inline-block" href="<?php self::renderLogoURL(); ?>" title="<?php echo LC_HEAD_IMG_LOGO_LINK_TITLE; ?>">
+                    <img class="logo w3-hover-opacity" src="<?php echo LC_HEAD_IMG_LOGO; ?>" alt="<?php echo strip_tags(LC_HEAD_TITLE); ?>">
                 </a>
             </div>
             <?php self::renderNavigationMenu($controller); ?>

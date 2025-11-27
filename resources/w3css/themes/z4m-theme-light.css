@@ -4,8 +4,8 @@
  * Copyright (C) 2019 Pascal MARTINEZ (contact@znetdk.fr)
  * License GNU GPL http://www.gnu.org/licenses/gpl-3.0.html GNU GPL
  * --------------------------------------------------------------------
- * ZnetDK 4 Mobile W3CSS dark theme 
- * Last update: 10/16/2024
+ * ZnetDK 4 Mobile W3CSS light theme 
+ * Last update: 08/16/2025
  */
 body {
     --z4m-light-primary:#0b78d1;
@@ -40,7 +40,7 @@ body {
 .w3-theme{color:var(--z4m-light-primary-txt)!important;background-color:var(--z4m-light-primary)!important}
 .w3-text-theme{color:var(--z4m-light-primary)!important}
 .w3-border-theme{border-color:var(--z4m-light-primary)!important}
-.w3-hover-theme:hover{color:var(--z4m-light-primary-txt)!important;background-color:var(--z4m-light-primary)!important;opacity:0.75}
+.w3-hover-theme:hover{color:#000!important;background-color:var(--z4m-light-400)!important}
 .w3-hover-text-theme:hover{color:var(--z4m-light-primary)!important}
 .w3-hover-border-theme:hover{border-color:var(--z4m-light-primary)!important}
 

@@ -1,5 +1,63 @@
+ZnetDK 3.6, 2025-11-27
+----------------------
+- CHANGE (all): new CFG_HTTPS_ONLY_ALLOWED PHP constant to force Application 
+  execution in HTTPS.
+- CHANGE (ZnetDK 4 Mobile only): for a better accessibility, the focus indicator
+  is now more visible.
+- CHANGE (ZnetDK 4 Mobile only): the z4m.messages.add() method now returns the 
+  element of the shown message.
+- CHANGE (ZnetDK 4 Mobile only): for a better accessibility, after refreshing a
+  datalist (z4m.list), the focus is now set to the edit anchor of the first row.
+  After closing a modal dialog set via the z4m.list.setModal() method,
+  the focus is set to the edit anchor initially clicked to open it.
+- CHANGE (ZnetDK 4 Mobile only): new z4m.list.setFocus() method to set the
+  keyboard focus to the edit anchor of the specified datalist row.
+- CHANGE (ZnetDK 4 Mobile only): for a better accessibility, a "Skip to content"
+  link is displayed when it is focused.
+- CHANGE (ZnetDK 4 Mobile only): for a better accessibility, the focus is set to
+  the first focusable element in the view after its display if it is not the
+  home view.
+- CHANGE (ZnetDK 4 Mobile only): new z4m.content.setFocus() method to set
+  the keyboard focus to the first focusable element in the currently displayed
+  view.
+- BUG FIXING (ZnetDK 4 Mobile only): in version 3.5, the 'forgot password?' link
+  was no longer displayed on login page when CFG_FORGOT_PASSWORD_ENABLED was set
+  to TRUE.
+- BUG FIXING (all): error HTTP 500 if ZNETDK_APP_URI or ZNETDK_ROOT_URI is used
+  in the config.php of the application.
+- BUG FIXING (all): error 'UI token not sent in HTTP request' is no longer
+  traced in the errors.log file when the method of the HTTP request is HEAD.
+- BUG FIXING (ZnetDK 4 Mobile only): when calling the z4m.form.showError()
+  method, if the specified input name is hidden, the error message is now
+  displayed in red at the top of the form instead of being displayed via the
+  JavaScript setCustomValidity() method.
+- BUG FIXING (ZnetDK 4 Mobile only): the focus was not set to the first button
+  within the User Panel modal when opened.
+- BUG FIXING (ZnetDK 4 Mobile only): text entered in the autocomplete field was
+  incorrectly cleared when the Escape key was pressed to hide the suggestions
+  list.
+- BUG FIXING (ZnetDK 4 Mobile only): the left and right outline borders of the
+  side navigation menu items where not visible when focused.
+- BUG FIXING (ZnetDK 4 Mobile only): The side navigation menu logo outline
+  height was less than the logo image height.   
+- BUG FIXING (ZnetDK 4 Mobile only): the header remained hidden after calling
+  the z4m.header.autoHideOnScroll(false) method.
+- BUG FIXING (ZnetDK 4 Mobile only): the datalist row anchors of the
+  'z4musers.php' and 'z4mprofiles.php' views did not have visible outline when
+  they were focused via the keyboard tab key.
+- BUG FIXING (ZnetDK 4 Mobile only): the controller name 'users' specified in
+  the 'z4musers.php' view is renamed 'Users' to allow action overload.
+- BUG FIXING (ZnetDK 4 Mobile only):  the controller name 'profiles' specified
+  in the 'z4mprofiles.php' view is renamed 'Profiles' to allow action overload.
+- BUG FIXING (ZnetDK 4 Mobile only): the background color for the
+  .w3-hover-theme:hover selector is changed to #BDBDBD in the
+  z4m-theme-light.css stylesheet for a better readability.
+- BUG FIXING (ZnetDK 4 Mobile only): the #000 and #FFF colors are replaced by
+  #121212 and #f1f1f1 colors in the z4m-theme-dark.css stylesheet for a better
+  contrast.
+
 ZnetDK 3.5, 2025-06-30
-------------------------
+----------------------
 - CHANGE (all): when user logs out, the session is now totally deleted.
 - CHANGE (ZnetDK 4 Mobile only): ARIA attributes added to the z4m.autocomplete
   input field widget.

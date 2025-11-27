@@ -18,8 +18,8 @@
  * --------------------------------------------------------------------
  * ZnetDK Core profiles view for mobile
  *
- * File version: 1.9
- * Last update: 10/22/2024
+ * File version: 1.10
+ * Last update: 09/04/2025
  */
 $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
 ?>
@@ -30,23 +30,23 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
     <div class="w3-col l6 w3-padding-small"><b><?php echo LC_TABLE_COL_MENU_ITEMS; ?></b></div>
 </div>
 <!-- List of Profiles -->
-<ul id="mzdk-profile-list" class="w3-ul w3-hide w3-margin-bottom" data-zdk-load="profiles:all">
+<ul id="mzdk-profile-list" class="w3-ul w3-hide w3-margin-bottom" data-zdk-load="Profiles:all">
     <li class="<?php echo $color['list_border_bottom']; ?> w3-hover-light-grey" data-id="{{profile_id}}">
         <div class="w3-row w3-stretch">
-            <a class="edit" href="javascript:void(0)">
-                <div class="w3-col s12 m6 l3 w3-padding-small">
-                    <span class="w3-large"><strong>{{profile_name}}</strong></span>
-                </div>
-                <div class="w3-col s12 m6 l3 w3-padding-small">
-                    <span>{{profile_description}}</span>
-                </div>
-                <div class="w3-col s12 m12 l6 w3-padding-small">
-                    <span class="has-menu-items-{{has_menu_items}}">
-                        <i class="<?php echo $color['icon']; ?> fa fa-sitemap fa-lg"></i>&nbsp;
-                        <span class="menu-items">{{menu_items}}</span>
-                    </span>
-                </div>
-            </a>
+            <div class="w3-col s12 m6 l3 w3-padding-small">
+                <a class="edit w3-large" href="javascript:void(0)">
+                    <strong>{{profile_name}}</strong>
+                </a>
+            </div>
+            <div class="w3-col s12 m6 l3 w3-padding-small">
+                <span>{{profile_description}}</span>
+            </div>
+            <div class="w3-col s12 m12 l6 w3-padding-small">
+                <span class="has-menu-items-{{has_menu_items}}">
+                    <i class="<?php echo $color['icon']; ?> fa fa-sitemap fa-lg"></i>&nbsp;
+                    <span class="menu-items">{{menu_items}}</span>
+                </span>
+            </div>
         </div>
     </li>
     <li><h3 class="<?php echo $color['msg_error']; ?> w3-center w3-stretch"><i class="fa fa-frown-o"></i>&nbsp;<?php echo LC_MSG_INF_NO_RESULT_FOUND; ?></h3></li>
@@ -61,7 +61,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                 <span class="title"></span>
             </h4>
         </header>
-        <form class="w3-container <?php echo $color['modal_content']; ?>" data-zdk-load="profiles:detail" data-zdk-submit="profiles:save">
+        <form class="w3-container <?php echo $color['modal_content']; ?>" data-zdk-load="Profiles:detail" data-zdk-submit="Profiles:save">
             <input type="hidden" name="profile_id">
             <div class="w3-section">
                 <label><b><?php echo LC_TABLE_COL_PROFILE_NAME; ?></b>
@@ -149,14 +149,14 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                     innerForm.setInputValue('menu_ids[]', formData['menu_ids[]']);
                 }
                 // Modal can be displayed now as the menu items are loaded
-                openModal(modalObj);
+                openModal(modalObj, formData.profile_id);
             });
             // The modal dialog is not displayed now
             return false;
         });
         function loadMenuItems(formElement, callback) {
             znetdkMobile.ajax.request({
-                controller: 'profiles',
+                controller: 'Profiles',
                 action: 'menuitems',
                 callback: function(response) {
                     var menuItemElement = formElement.element.find('select[name="menu_ids[]"]');
@@ -188,11 +188,13 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
             });
         }
         // Open modal dialog: on form submit success, the list is refreshed
-        function openModal(modalObj) {
+        function openModal(modalObj, profileId) {
             modalObj.open(function(response){
                 if (response.success === true) {
                     z4mprofileList.refresh();
                 }
+            }, function(){ // On close, the focus is set to the row matching profileId
+                z4mprofileList.setFocus(profileId > 0 ? profileId : undefined);
             });
         }
         // Click on remove button
@@ -204,7 +206,7 @@ $color = CFG_MOBILE_W3CSS_THEME_COLOR_SCHEME;
                     return;
                 }
                 znetdkMobile.ajax.request({
-                    controller: 'profiles',
+                    controller: 'Profiles',
                     action: 'remove',
                     data: {profile_id: $('#mzdk-profile-modal input[name=profile_id]').val()},
                     callback: function(response) {

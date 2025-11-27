@@ -18,8 +18,8 @@
 * --------------------------------------------------------------------
 * Core english translations of the application
 *
-* File version: 1.23
-* Last update: 05/26/2025
+* File version: 1.24
+* Last update: 08/29/2025
 */
 
 /* General PHP localization settings (used by the PHP 'setlocale' function) */
@@ -42,6 +42,7 @@ define('LC_LANG_ISO_CODE','en');
 define('LC_PAGE_TITLE','ZnetDK application');
 
 /* Header labels */
+define('LC_HEAD_LNK_SKIP_TO_CONTENT', 'Skip to content');
 define('LC_HEAD_TITLE','ZnetDK core application');
 define('LC_HEAD_SUBTITLE','Ready for development...');
 define('LC_HEAD_LNK_LOGOUT','Logout');

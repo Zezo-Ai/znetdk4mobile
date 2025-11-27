@@ -17,8 +17,8 @@
  * --------------------------------------------------------------------
  * ZnetDK Javascript library for mobile page layout
  *
- * File version: 1.14
- * Last update: 06/29/2025
+ * File version: 1.15
+ * Last update: 11/14/2025
  */
 
 /* global FormData, BeforeInstallPromptEvent */
@@ -296,6 +296,7 @@ z4m.initApp = function () {
     this.action.events.handleClick(); // Click on action buttons
     this.list.events.handleEdit(); // Click on list edit buttons
     this.list.events.handleScroll(); // Scroll of the list items
+    this.header.events.handleSkipToContentLinkClick(); // Click Skip to content link
     if (z4m.authentication.isEnabled()
             && !z4m.authentication.isRequired()) {
         this.header.events.handleProfileButtonClick(); // Heading Profile button
@@ -751,11 +752,7 @@ z4m.browser.readLocalData = function (storageKey) {
     var path = this.getLocalDataKeyPath();
     try {
         var storedValue = localStorage.getItem(path + storageKey);
-        if (storedValue) {
-            return storedValue;
-        } else {
-            return false;
-        }
+        return storedValue ? storedValue : false;
     } catch (e) {
         z4m.log.error('local storage not supported by the browser!');
         return false;
@@ -974,6 +971,7 @@ z4m.header.events.handleLogoutButtonClick = function () {
  * no longer hidden on scroll.
  */
 z4m.header.events.handleHideHeaderOnScroll = function(isEnabled) {
+    $(z4m.header.headerId).css('top', 0);
     $(window).off('scroll.z4m_header');
     if (isEnabled === false) {
         z4m.header.autoHideOnScrollEnabled = false;
@@ -988,6 +986,29 @@ z4m.header.events.handleHideHeaderOnScroll = function(isEnabled) {
             $(z4m.header.headerId).css('top', 0);
         }
     });
+};
+
+/**
+ * Handle click and enter key pressed events of the Skip to content anchor
+ */
+z4m.header.events.handleSkipToContentLinkClick = function() {
+    $('#zdk-skip-to-content').on('click.z4m_header', function(e){
+        e.preventDefault();
+        _gotoContent();
+    }).on('keydown.z4m_header', function(e) {
+        if (e.code === 'Enter') {
+            e.preventDefault(); // Prevent default action
+            _gotoContent();
+        }
+    });
+    function _gotoContent() {
+        if (z4m.navigation.isPageToBeReloaded()) {
+            z4m.content.goToAnchor('zdk-content');
+            setTimeout(function(){history.replaceState(null, null, ' ');}, 500);
+        } else {
+            z4m.content.setFocus();
+        }
+    }
 };
 
 //************************** CONTENT PUBLIC METHODS ****************************
@@ -1184,7 +1205,24 @@ z4m.content.goToAnchor = function (anchor) {
                 headerHeight = z4m.header.getHeight();
         $(window).scrollTop(anchorPosition - headerHeight);
     }
+    // The page content top spacing is adjusted
+    z4m.content.setTopSpacing();
     return true;
+};
+
+/**
+ * Set focus to the first focusable element within the current displayed view.
+ */
+z4m.content.setFocus = function() {
+    const displayedView = z4m.content.getDisplayedView(),
+        elToFocus = displayedView.find('a[href],button:enabled,select:enabled,textarea:enabled,'
+        + 'input:not([type="hidden"]):enabled,[tabindex]:not([tabindex="-1"])')
+        .filter(':visible').first();
+    if (elToFocus.length > 0) {
+        elToFocus[0].focus({focusVisible:true});
+    } else {
+        z4m.navigation.setFocusToHorizontalMenuItem(z4m.content.getDisplayedViewId());
+    }
 };
 
 //*************************** FOOTER PUBLIC METHODS ****************************
@@ -1249,6 +1287,7 @@ z4m.messages.getContainer = function () {
  * @param {Boolean} autoHide If set to true or undefined, the message is
  * automatically hidden after the time set in seconds for the
  * 'autoCloseDuration' property
+ * @return {jQuery} the message element as jQuery object
  */
 z4m.messages.add = function (severity, summary, detail, autoHide) {
     const newEl = $(this.messageTemplateId).contents().filter('div').clone();
@@ -1263,6 +1302,7 @@ z4m.messages.add = function (severity, summary, detail, autoHide) {
         }, this.autoCloseDuration);
     }
     z4m.content.setTopSpacing();
+    return newEl;
 };
 
 /**
@@ -1375,7 +1415,7 @@ z4m.messages.ask = function (title, question, buttons, callback) {
         modal.css('z-index', z4m.modal.getMostOnTopZIndex()+1);
     }
     modal.show();
-    modal.find('button.no').trigger('focus');
+    modal.find('button.no')[0].focus();
 };
 
 /**
@@ -1491,12 +1531,12 @@ z4m.authentication.changePassword = function (login, oldPwd, msg) {
  */
 z4m.authentication.showUserPanel = function () {
     var $this = this,
-            modalElement = $(this.connectedUserPanelId),
-            modal = z4m.modal.make(modalElement),
+            modalEl = $(this.connectedUserPanelId),
+            modal = z4m.modal.make(modalEl),
             userName = z4m.header.getConnectedUserName(),
             email = z4m.header.getConnectedUserMail();
-    modalElement.find('h3.username').text(userName);
-    modalElement.find('p.usermail').text(email);
+    modalEl.find('h3.username').text(userName);
+    modalEl.find('p.usermail').text(email);
     modal.open();
     _handleButtonClick('changepwd', function(){
         const isLoginNameEmail = z4m.browser.readLocalData(this.loginWithEmailStorageKey);
@@ -1512,9 +1552,10 @@ z4m.authentication.showUserPanel = function () {
     _handleButtonClick('logout', function(){
         this.disconnect();
     });
+    modalEl.find('button')[0].focus();
     function _handleButtonClick(buttonClass, onClick, isOnlyOff) {
         var eventName = 'click.z4m_auth',
-                button = modalElement.find('button.' + buttonClass);
+                button = modalEl.find('button.' + buttonClass);
         button.off(eventName);
         if (isOnlyOff === true) { return; }
         button.on(eventName, function () {
@@ -1529,6 +1570,8 @@ z4m.authentication.showUserPanel = function () {
  * Display the login form in a modal dialog.
  * If user is already connected and his session has expired, the login name is
  * pre-filled and the keyboard focus is set on the password field.
+ * Forgot password link is only displayed if user logged in once on the current
+ * terminal ('remember me' state exists in local storage).
  * @param {Boolean} renewCredentials When set to true, the login dialog is
  * closed and the queued ajax requests are executed. Otherwise the page is
  * reloaded.
@@ -1538,8 +1581,8 @@ z4m.authentication.showLoginForm = function (renewCredentials) {
             modal = z4m.modal.make($(this.loginFormId)),
             focusedField = initLoginName();
     handleRememberMeClick();
-    if (initRememberMeState()) {
-        // Forgot password link only displayed on trusted terminal
+    initRememberMeState();
+    if (z4m.browser.readLocalData(this.rememberMeLocalStorageKey)) {
         handleForgotPasswordClick();
     }
     modal.open(
@@ -1657,7 +1700,7 @@ z4m.authentication.showLoginForm = function (renewCredentials) {
  */
 z4m.authentication.readLocalLoginAccess = function() {
     const accessValue = z4m.browser.readLocalData(this.rememberMeLocalStorageKey);
-    return accessValue === 'private' ? accessValue : '';    
+    return accessValue === 'private' ? accessValue : '';
 };
 
 /**
@@ -1753,6 +1796,23 @@ z4m.navigation.getVerticalMenu = function () {
  */
 z4m.navigation.getHorizontalMenu = function () {
     return $(this.horizontalMenuId);
+};
+
+/**
+ * Get the horizontal menu item element matching the specified view ID.
+ * @param {string|udefined} viewID View identifier or undefined to get the first
+ * menu item.
+ * @returns {jQuery|false} The jQuery element found for the specified view ID.
+ * Returns false if no menu item is found for the specified view ID.
+ */
+z4m.navigation.getHorizontalMenuItem = function(viewID) {
+    const item = this.getHorizontalMenu().find(viewID === undefined
+        ? '.items a:first' : '.items a[data-view_id=' + viewID + ']');
+    if (item.length > 0) {
+        return item;
+    }
+    z4m.log.error("Horizontal tab menu: view ID='" + viewID + "' unknown.");
+    return false;
 };
 
 /**
@@ -1921,9 +1981,7 @@ z4m.navigation.build = function () {
             // The menu items are activated in the vertical and horizontal menus
             _setVerticalMenuItemActive(innerViewId);
             _setHorizontalItemActive(innerViewId);
-            // The page content top spacing is adjusted
-            z4m.content.setTopSpacing();
-            // If an anchor is set into the URL, the page is scroll to the anchor
+            // If an anchor is set into the URL, the page is scrolled to the anchor
             z4m.content.goToAnchor();
         }
     }
@@ -1991,15 +2049,20 @@ z4m.navigation.build = function () {
                 if (!viewIsVisible) {
                     // The view is displayed if it is not already displayed
                     viewElement.fadeIn(200, function () {
-                        $this.events.triggerAfterViewDisplay(viewID);
-                        z4m.content.goToAnchor(anchor); // The view is positionned on the anchor
+                        _afterShow();
                     });
                 } else {
-                    $this.events.triggerAfterViewDisplay(viewID);
-                    z4m.content.goToAnchor(anchor); // The view is positionned on the anchor
+                    _afterShow();
                 }
                 function _getMenuItemLabel(viewID) {
                     return _getMenuItem(viewID).children("a").text();
+                }
+                function _afterShow() {
+                    $this.events.triggerAfterViewDisplay(viewID);
+                    if (!z4m.content.goToAnchor(anchor)  // The view is positionned on the anchor
+                            && !noViewSpecified) {
+                        z4m.content.setFocus();
+                    }
                 }
             }
         }
@@ -2050,17 +2113,12 @@ z4m.navigation.build = function () {
         }
     }
     function _setHorizontalItemActive(viewID) {
-        var menuItem = null;
-        if (viewID === undefined) {
-            menuItem = $this.getHorizontalMenu().find('.items a:first');
-        } else {
-            _resetTabItemActive();
-            menuItem = $this.getHorizontalMenu().find('.items a[data-view_id=' + viewID + ']');
-            if (menuItem.length === 0) {
-                z4m.log.error("Horizontal tab menu: view ID='" + viewID + "' unknown.");
-            }
+        let item = $this.getHorizontalMenuItem(viewID);
+        if (!item) {
+            return;
         }
-        menuItem.addClass($this.activeMenuItemClass).addClass('is-active');
+        _resetTabItemActive();
+        item.addClass($this.activeMenuItemClass).addClass('is-active');
         function _resetTabItemActive() {
             $this.getHorizontalMenu().find('.items .menu-item')
                 .removeClass($this.activeMenuItemClass).removeClass('is-active');
@@ -2153,15 +2211,14 @@ z4m.navigation.closeVerticalMenu = function () {
  * match any view loaded into the view container
  */
 z4m.navigation.addRowCountToHorizontalMenuItem = function (rowCount, viewId) {
-    var menuItem = this.getHorizontalMenu().find('.items a[data-view_id=' + viewId + ']');
-    if (menuItem.length === 0) {
-        z4m.log.error('Unable to get the horizontal menu item for the displayed view!');
+    var item = this.getHorizontalMenuItem(viewId);
+    if (!item) {
         return false;
     }
-    if (menuItem.find('span.row-count').length === 0) {
-        menuItem.find('span').last().after('<span class="row-count"/>');
+    if (item.find('span.row-count').length === 0) {
+        item.find('span').last().after('<span class="row-count"/>');
     }
-    menuItem.find('span.row-count').text(' (' + rowCount + ')');
+    item.find('span.row-count').text(' (' + rowCount + ')');
     /* The page content top spacing is adjusted */
     z4m.content.setTopSpacing();
     return true;
@@ -2174,15 +2231,22 @@ z4m.navigation.addRowCountToHorizontalMenuItem = function (rowCount, viewId) {
  * match any view loaded into the view container
  */
 z4m.navigation.clearRowCountFromHorizontalMenuItem = function (viewId) {
-    var menuItem = this.getHorizontalMenu().find('.items a[data-view_id=' + viewId + ']');
-    if (menuItem.length === 0) {
-        z4m.log.error('Unable to get the horizontal menu item for the displayed view!');
+    var item = this.getHorizontalMenuItem(viewId);
+    if (!item) {
         return false;
     }
-    menuItem.find('span.row-count').remove();
+    item.find('span.row-count').remove();
     /* The page content top spacing is adjusted */
     z4m.content.setTopSpacing();
     return true;
+};
+
+z4m.navigation.setFocusToHorizontalMenuItem = function (viewId) {
+    var item = this.getHorizontalMenuItem(viewId);
+    if (!item) {
+        return false;
+    }
+    item[0].focus({focusVisible:true});
 };
 
 /**
@@ -2328,15 +2392,15 @@ z4m.modal.open = function (onSubmit, onClose, focusedInputName) {
     this.element.trigger(this.events.afterOpenName, [this]);
     return true;
     // Private functions
-    function _setZIndex() {        
-        if (z4m.modal.modalStack.length > 0) {            
+    function _setZIndex() {
+        if (z4m.modal.modalStack.length > 0) {
             $this.element.css('z-index', z4m.modal.getMostOnTopZIndex()+1);
         }
         z4m.modal.modalStack.push($this.element);
     }
     function _registerCloseCallback(closeCallback) {
         if (typeof closeCallback !== 'function') {
-            return false;
+            return;
         }
         const eventName = $this.events.beforeUiModalCloseNane + '.z4m_modal';
         $this.element.off(eventName).on(eventName, function () {
@@ -2346,7 +2410,8 @@ z4m.modal.open = function (onSubmit, onClose, focusedInputName) {
     function _initForm(submitCallback) {
         var form = $this.getInnerForm(true);
         if (form === false) {
-            return false;
+            _setFocus();
+            return;
         }
         var formObject = z4m.form.make(form, function (response) {
             var returnedValue = typeof submitCallback === 'function'
@@ -2359,8 +2424,14 @@ z4m.modal.open = function (onSubmit, onClose, focusedInputName) {
         });
         if (formObject.doesInputExist(focusedInputName)) {
             formObject.setFocus(focusedInputName);
-        } else {
-            formObject.setFocusOnFirstInput();
+        } else if (!formObject.setFocusOnFirstInput()){
+            _setFocus();
+        }
+    }
+    function _setFocus() {
+        let el = $this.element.find('a.close, button.cancel');
+        if (el.length > 0) {
+            el[el.length < 2 ? 0 : 1].focus();
         }
     }
 };
@@ -2424,7 +2495,7 @@ z4m.modal.getMostOnTop = function() {
 /**
  * Returns the most on top modal z-index value.
  * @returns {int} The z-index value or -1 if no modal dialog is currently
- * displayed 
+ * displayed
  */
 z4m.modal.getMostOnTopZIndex = function() {
     return z4m.modal.getMostOnTop() !== false ?
@@ -2549,7 +2620,7 @@ z4m.form.setFocusOnFirstInput = function () {
         + ',input:visible:not([disabled]):not([readonly])',
         focusedElement = this.element.find(selector).first();
     if (focusedElement.length === 1) {
-        focusedElement.trigger('focus');
+        focusedElement[0].focus();
         return true;
     }
     return false;
@@ -2563,9 +2634,10 @@ z4m.form.setFocusOnFirstInput = function () {
 z4m.form.setFocus = function (inputName) {
     if (!this.isInstance()) return false;
     if (typeof inputName === 'string') {
-        var focusedElement = this.element.find('[name="' + inputName + '"]');
-        if (focusedElement.length > 0) {// Multiple inputs accepted (case of radio buttons)
-            focusedElement.focus().select();
+        var focusedEl = this.element.find('[name="' + inputName + '"]');
+        if (focusedEl.length > 0) {// Multiple inputs accepted (case of radio buttons)
+            focusedEl[0].focus();
+            focusedEl[0].select();
             return true;
         }
     }
@@ -2737,14 +2809,15 @@ z4m.form.showError = function (message, inputName, hidePrevErrors) {
         const withPos = inputName.split(':', 2);
         pos = withPos.length === 2 && !isNaN(parseInt(withPos[1],10))
             ? parseInt(withPos[1],10) : null;
-        inputFound = this.element.find('[name="' + withPos[0] + '"]');
+        inputFound = this.element.find('[name="' + withPos[0] + '"]:visible');
     }
     if (inputFound.length > 0) {
         if (pos === null) {
             this.setFocus(inputName);
         } else {
             inputFound = inputFound.eq(pos);
-            inputFound.focus().select();
+            inputFound[0].focus();
+            inputFound[0].select();
         }
         this.setLastInputInError(inputFound, message);
     } else {
@@ -3846,6 +3919,9 @@ z4m.list.loadNewDataPage = function () {
                 z4m.navigation.addRowCountToHorizontalMenuItem(
                     response.total, z4m.content.getParentViewId($this.element));
             }
+            if (nextPage === 1) {
+                $this.setFocus(); // Focus set to the edit anchor of the first row
+            }
             // Callback function called if defined
             if (typeof $this.loadedCallback === 'function') {
                 $this.loadedCallback.call($this, response.rows.length, nextPage);
@@ -4008,8 +4084,34 @@ z4m.list.setModal = function (modalElementId, isFormModifiable, onAdd, onEdit) {
             }
             // Submit succeeded so the list is refreshed
             $this.refresh();
+        }, function(){
+            $this.setFocus(formData !== undefined && formData.hasOwnProperty('id')
+                ? formData.id : undefined);
         });
     }
+};
+
+/**
+ * Set focus to the edit anchor of the specified row identifier.
+ * @param {int|undefined} rowId Identifier of the row. If not set, the focus is
+ * set to the first row in the list when exists, otherwise to the first
+ * focusable element in the view.
+ * @returns {Boolean} Value true on success, false if the method is called out
+ * of the context of a list object.
+ */
+z4m.list.setFocus = function(rowId) {
+    if (this.element instanceof jQuery === false) {
+        z4m.log.error('List is not instantiated!');
+        return false;
+    }
+    let anchor = rowId > 0 ? this.element.find('li[data-id=' + rowId + '] a.edit')
+        : this.element.find('li[data-id] a.edit').first();
+    if (anchor.length === 1) {
+        anchor[0].focus({focusVisible:true});
+    } else {
+        z4m.content.setFocus();
+    }
+    return true;
 };
 
 /**
@@ -4274,7 +4376,7 @@ z4m.autocomplete.make = function (inputElementSelector, controllerAction,
     // PRIVATE METHODS
     function _setInputAttr() {
         const existingInputId = inputElement.attr('id'),
-            inputId = existingInputId === undefined 
+            inputId = existingInputId === undefined
                 ? 'z4m-autocomplete-input-' + z4m.autocomplete.uniqueId : existingInputId,
                 listId = 'z4m-autocomplete-list-' + z4m.autocomplete.uniqueId;
         inputElement.attr({id: inputId, role: 'combobox', 'aria-autocomplete': 'list',
@@ -4509,6 +4611,7 @@ z4m.autocomplete.make = function (inputElementSelector, controllerAction,
                 _removeSuggestions();
             } else if (event.code === 'Escape') {
                 _removeSuggestions();
+                event.preventDefault();
                 event.stopPropagation();
             }
         });

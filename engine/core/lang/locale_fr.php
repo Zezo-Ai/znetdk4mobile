@@ -42,6 +42,7 @@ define('LC_LANG_ISO_CODE','fr');
 define('LC_PAGE_TITLE','Application ZnetDK');
 
 /* Header labels */
+define('LC_HEAD_LNK_SKIP_TO_CONTENT', 'Passer au contenu');
 define('LC_HEAD_TITLE','Application ZnetDK (core)');
 define('LC_HEAD_SUBTITLE','Prête au développement...');
 define('LC_HEAD_LNK_LOGOUT','Se déconnecter');
